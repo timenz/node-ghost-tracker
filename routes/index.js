@@ -19,9 +19,9 @@ router.get('/', function(req, res, next) {
 const resultCount = (query) => {
   return new Promise((resolve, reject) => {
     connection.query({
-      sql: 'SELECT COUNT(`title`) FROM `posts` WHERE `plaintext` regexp ?',
+      sql: 'SELECT COUNT(`title`) FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=?',
       timeout: 40000, // 40s
-      values: [query]
+      values: [query, query, 'published']
     }, function (error, results, fields) {
       if (error) return reject(error)
       resolve(results)
@@ -32,9 +32,9 @@ const resultCount = (query) => {
 const resultData = (query, page, limit) => {
   return new Promise((resolve, reject) => {
     connection.query({
-      sql: 'SELECT `title`, `slug`, `plaintext` FROM `posts` WHERE `plaintext` regexp ? limit ?,?',
+      sql: 'SELECT `title`, `slug`, `updated_at`, `plaintext` FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=? order by `updated_at` limit ?,?',
       timeout: 40000, // 40s
-      values: [query, page, limit]
+      values: [query, query, 'published', page, limit]
     }, function (error, results, fields) {
       if (error) return reject(error)
       resolve(results)

@@ -1,0 +1,14 @@
+version: '3'
+services:
+  ghosttracker:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: "ghosttracker"
+    restart: always
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    command: >
+      bash -c "if [ \"$NODE_ENV\" = \"development\" ]; then npm run dev; else npm run start; fi"

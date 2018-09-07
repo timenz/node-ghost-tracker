@@ -7,7 +7,10 @@ Simple node app to provide api to search data in posts for [ghost blog app](http
 - mysql backend
 
 ## Install
-
+- clone repository
+- create `.env` file
+- run `npm run install`
+- run `docker-compose up`
 
 ## Notes
 
