@@ -25,7 +25,6 @@ const envCorsWL = process.env.CORS_WHITELIST
 var whitelist = envCorsWL.split(',')
 var corsOptions = {
   origin: function (origin, callback) {
-    debug('nana', origin)
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
@@ -49,7 +48,12 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.json(err.message);
+  if (process.env.NODE_ENV === 'development') {
+    debug('err', err)
+    res.json(err.message);
+  } else {
+    res.json({msg: 'failed to process your request'});
+  }
 });
 
 module.exports = app;

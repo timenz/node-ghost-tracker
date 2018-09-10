@@ -18,8 +18,9 @@ router.get('/', function(req, res, next) {
 
 const resultCount = (query) => {
   return new Promise((resolve, reject) => {
+    const sql = 'SELECT COUNT(`title`) as count FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=?'
     connection.query({
-      sql: 'SELECT COUNT(`title`) FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=?',
+      sql: sql,
       timeout: 40000, // 40s
       values: [query, query, 'published']
     }, function (error, results, fields) {
@@ -31,8 +32,9 @@ const resultCount = (query) => {
 
 const resultData = (query, page, limit) => {
   return new Promise((resolve, reject) => {
+    const sql = 'SELECT `title`, `slug`, `updated_at`, `created_at`, `plaintext` FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=? order by `updated_at` desc limit ?,?'
     connection.query({
-      sql: 'SELECT `title`, `slug`, `updated_at`, `plaintext` FROM `posts` WHERE (`plaintext` REGEXP ? OR `title` REGEXP ?) AND `status`=? order by `updated_at` limit ?,?',
+      sql: sql,
       timeout: 40000, // 40s
       values: [query, query, 'published', page, limit]
     }, function (error, results, fields) {
@@ -44,14 +46,19 @@ const resultData = (query, page, limit) => {
 
 router.get('/search', function(req, res, next) {
   const query = req.query.q || null
-  const page = req.query.p || 0
-  const limit = req.query.l || 30
+  const page = parseInt(req.query.p) || 0
+  const limit = parseInt(req.query.l) || 30
   resultCount(query)
     .then(result => {
-      if (result.length > 0) return resultData(query, page, limit)
+      if (result.length > 0) return Promise.all([result[0].count, resultData(query, page, limit)])
+      return Promise.all([0, {}])
     })
     .then(result => {
-      res.json(result)
+      [count, data] = result
+      res.json({
+        count,
+        data
+      })
     }).catch(err => {
       next(err)
     })

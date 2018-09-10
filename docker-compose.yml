@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     container_name: "ghosttracker"
     restart: always
+    ports:
+      - 2360:2360
     volumes:
       - .:/usr/src/app
     environment:
